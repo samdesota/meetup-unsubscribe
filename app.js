@@ -195,13 +195,14 @@ class MeetupGroupManager {
             this.showStatus(`Successfully loaded ${this.groups.length} groups`, 'success');
         } catch (error) {
             console.error('Error loading groups:', error);
+
+            // Show alert with error details
+            alert(`Failed to load groups:\n\n${error.message}\n\nPlease make sure:\n1. You have saved a valid Meetup.com cookie\n2. You are logged into Meetup.com\n3. Your cookie hasn't expired\n\nClick "Detailed Instructions" in the Authentication section for help getting your cookie.`);
+
             this.showStatus(
-                'Failed to load groups. Please make sure you are logged into Meetup.com in this browser and try again.',
+                `Error: ${error.message}`,
                 'error'
             );
-
-            // For demo purposes, load sample data
-            this.loadSampleData();
         } finally {
             this.showLoading(false);
         }
@@ -218,77 +219,13 @@ class MeetupGroupManager {
                     name: node.name,
                     urlname: node.urlname,
                     members: node.stats?.memberCounts?.all || 0,
-                    city: node.city || 'Unknown',
-                    country: node.country || 'Unknown',
                     status: node.status || 'UNKNOWN',
-                    // Store additional data if available
                     link: node.link || `https://www.meetup.com/${node.urlname}/`,
                     photo: node.groupPhoto?.standardUrl || null,
                 };
             });
         }
         return [];
-    }
-
-    loadSampleData() {
-        // Sample data for demonstration
-        this.groups = [
-            {
-                id: '37785590',
-                name: 'Live Music Everyday in Downtown Barcelona',
-                urlname: 'live-music-everyday-in-downtown-barcelona',
-                members: 1234,
-                city: 'Barcelona',
-                country: 'Spain'
-            },
-            {
-                id: '12345678',
-                name: 'Tech Meetup San Francisco',
-                urlname: 'tech-meetup-san-francisco',
-                members: 5678,
-                city: 'San Francisco',
-                country: 'USA'
-            },
-            {
-                id: '23456789',
-                name: 'Photography Enthusiasts London',
-                urlname: 'photography-enthusiasts-london',
-                members: 890,
-                city: 'London',
-                country: 'UK'
-            },
-            {
-                id: '34567890',
-                name: 'Hiking Adventures Seattle',
-                urlname: 'hiking-adventures-seattle',
-                members: 2345,
-                city: 'Seattle',
-                country: 'USA'
-            },
-            {
-                id: '45678901',
-                name: 'Startup Founders Berlin',
-                urlname: 'startup-founders-berlin',
-                members: 3456,
-                city: 'Berlin',
-                country: 'Germany'
-            },
-            {
-                id: '56789012',
-                name: 'Book Club Amsterdam',
-                urlname: 'book-club-amsterdam',
-                members: 456,
-                city: 'Amsterdam',
-                country: 'Netherlands'
-            }
-        ];
-
-        this.filteredGroups = [...this.groups];
-        this.renderGroups();
-        this.showStatus(
-            'Loaded sample data for demonstration. Click "Load My Groups" after logging into Meetup.com to load your actual groups.',
-            'warning'
-        );
     }
 
     handleSearch(query) {
@@ -298,9 +235,7 @@ class MeetupGroupManager {
             this.filteredGroups = [...this.groups];
         } else {
             this.filteredGroups = this.groups.filter(group =>
-                group.name.toLowerCase().includes(searchTerm) ||
-                group.city.toLowerCase().includes(searchTerm) ||
-                group.country.toLowerCase().includes(searchTerm)
+                group.name.toLowerCase().includes(searchTerm)
             );
         }
 
@@ -310,41 +245,38 @@ class MeetupGroupManager {
     renderGroups() {
         if (this.filteredGroups.length === 0) {
             this.groupsContainer.innerHTML = `
-                <div class="empty-state">
+                    < div class="empty-state" >
                     <svg class="empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                         <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                     <h2>No Groups Found</h2>
                     <p>${this.groups.length === 0 ? 'Click "Load My Groups" to fetch your Meetup groups' : 'Try adjusting your search terms'}</p>
-                </div>
-            `;
+                </div >
+                    `;
             return;
         }
 
         this.groupsContainer.innerHTML = this.filteredGroups.map(group => `
-            <div class="group-card ${this.selectedGroups.has(group.id) ? 'selected' : ''}" 
-                 data-group-id="${group.id}"
-                 id="group-${group.id}">
-                <div class="group-header">
-                    <input type="checkbox" 
-                           class="group-checkbox" 
-                           data-group-id="${group.id}"
-                           ${this.selectedGroups.has(group.id) ? 'checked' : ''}>
-                    <div class="group-info">
-                        <h3 class="group-name">${this.escapeHtml(group.name)}</h3>
-                        <div class="group-meta">
-                            <span class="group-meta-item">
-                                👥 ${this.formatNumber(group.members)} members
-                            </span>
-                            <span class="group-meta-item">
-                                📍 ${this.escapeHtml(group.city)}, ${this.escapeHtml(group.country)}
-                            </span>
-                        </div>
+                    < div class="group-card ${this.selectedGroups.has(group.id) ? 'selected' : ''}"
+                data - group - id="${group.id}"
+                id = "group-${group.id}" >
+                    <div class="group-header">
+                        <input type="checkbox"
+                            class="group-checkbox"
+                            data-group-id="${group.id}"
+                            ${this.selectedGroups.has(group.id) ? 'checked' : ''}>
+                            <div class="group-info">
+                                <h3 class="group-name">${this.escapeHtml(group.name)}</h3>
+                                <div class="group-meta">
+                                    <span class="group-meta-item">
+                                        👥 ${this.formatNumber(group.members)} members
+                                    </span>
+                                </div>
+                            </div>
                     </div>
-                </div>
-            </div>
-        `).join('');
+            </div >
+                    `).join('');
 
         // Attach event listeners to checkboxes and cards
         this.groupsContainer.querySelectorAll('.group-checkbox').forEach(checkbox => {
@@ -410,7 +342,7 @@ class MeetupGroupManager {
         if (this.selectedGroups.size === 0) return;
 
         const confirmed = confirm(
-            `Are you sure you want to unsubscribe from ${this.selectedGroups.size} group(s)? This action cannot be undone.`
+            `Are you sure you want to unsubscribe from ${this.selectedGroups.size} group(s) ? This action cannot be undone.`
         );
 
         if (!confirmed) return;
@@ -433,7 +365,7 @@ class MeetupGroupManager {
             } catch (error) {
                 failed++;
                 this.updateGroupStatus(groupId, 'error', '✗ Failed to leave');
-                this.addProgressDetail(`${group.name}: ${error.message}`, 'error');
+                this.addProgressDetail(`${group.name}: ${error.message} `, 'error');
             }
 
             processed++;
@@ -485,7 +417,7 @@ class MeetupGroupManager {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            throw new Error(errorData.error || `HTTP error! status: ${response.status} `);
         }
 
         const data = await response.json();
@@ -498,7 +430,7 @@ class MeetupGroupManager {
     }
 
     updateGroupStatus(groupId, status, message) {
-        const card = document.getElementById(`group-${groupId}`);
+        const card = document.getElementById(`group - ${groupId} `);
         if (!card) return;
 
         card.classList.add(status);
@@ -509,7 +441,7 @@ class MeetupGroupManager {
         }
 
         const statusEl = document.createElement('div');
-        statusEl.className = `group-status ${status}`;
+        statusEl.className = `group - status ${status} `;
         statusEl.textContent = message;
         card.querySelector('.group-info').appendChild(statusEl);
     }
@@ -523,13 +455,13 @@ class MeetupGroupManager {
 
     updateProgress(current, total) {
         const percentage = (current / total) * 100;
-        this.progressFill.style.width = `${percentage}%`;
+        this.progressFill.style.width = `${percentage}% `;
         this.progressText.textContent = `Processing ${current} of ${total} groups...`;
     }
 
     addProgressDetail(message, type = 'success') {
         const item = document.createElement('div');
-        item.className = `progress-item ${type}`;
+        item.className = `progress - item ${type}`;
         item.textContent = type === 'success' ? `✓ ${message}` : `✗ ${message}`;
         this.progressDetails.appendChild(item);
         this.progressDetails.scrollTop = this.progressDetails.scrollHeight;
